@@ -25,7 +25,7 @@ a:hover {
 }
 
 body {
-  background-color: #333;
+  background-color: rgb(146, 187, 221);
   color: #fff;
   font-family: 'Roboto', 'Open Sans', 'Lucida Grande', sans-serif;
   height: 100%;
@@ -225,11 +225,11 @@ button {
 }
 
 button:active {
-  background-color: #3367D6;
+  background-color: #eb6ccb;
 }
 
 button:hover {
-  background-color: #3B78E7;
+  background-color: #af095c;
 }
 
 button:focus {
@@ -250,7 +250,7 @@ input[type=text] {
   background-color: transparent;
   border: none;
   border-bottom: solid 1px #4c4c4f;
-  color: #fff;
+  color: rgb(14, 17, 233);
   display: block;
   font-size: 1em;
   margin-right: 20px;
