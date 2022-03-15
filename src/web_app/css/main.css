@@ -258,6 +258,11 @@ input[type=text] {
   width: 100%;
 }
 
+#mp4-video {
+  width: 50%;
+  height: 50%;
+}
+
 input[type="text"]:focus {
   border-bottom: solid 2px #4285F4;
   outline: none;
