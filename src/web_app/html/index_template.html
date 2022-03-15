@@ -26,9 +26,22 @@
   <link rel="canonical" href="{{ room_link }}">
   <link rel="stylesheet" href="/css/main.css">
 
+  <script>
+    function handleFile(event) {
+      const selectedFile = document.getElementById('uploadInput').files[0];
+      var videoFilePath = (window.URL || window.webkitURL).createObjectURL(selectedFile);
+      console.log('videoFilePath: ', videoFilePath);
+      document.getElementById('mp4_video').src = videoFilePath;
+    }
+
+    function handle_file() {
+      const inputElement = document.getElementById("uploadInput");
+      inputElement.addEventListener("change", handleFile, false);
+    }
+  </script>
 </head>
 
-<body>
+<body onload="handle_file()">
   {% if header_message %}
   <header>
     {{ header_message }}
@@ -63,8 +76,12 @@
     </div>
   </div>
 
+  <label for="uploadInput">Choose a video file:</label>
+  <input type="file" id="uploadInput" name="uploadInput" accept="video/*">
+
   <div id="video-file">
-    <video id="mp4-video" src="/videos/Soch_Na_Sake_Airlift_720p.mp4" controls></video>
+    <!--video id="mp4_video" src="../videos/Soch_Na_Sake_Airlift_720p.mp4" controls></video-->
+    <video id="mp4_video" src="" autoplay></video>
   </div>
 
   <div id="confirm-join-div" class="hidden">
