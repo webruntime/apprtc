@@ -23,6 +23,9 @@ handlers:
 - url: /css
   static_dir: css
 
+- url: /videos
+  static_dir: videos
+
 - url: /compute/.*
   script: apprtc.app
   login: admin

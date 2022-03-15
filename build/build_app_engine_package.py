@@ -72,7 +72,7 @@ def CopyApprtcSource(src_path, dest_path):
     shutil.rmtree(dest_path)
   os.makedirs(dest_path)
 
-  simply_copy_subdirs = ['bigquery', 'css', 'images', 'third_party']
+  simply_copy_subdirs = ['bigquery', 'css', 'images', 'videos', 'third_party']
 
   for dirpath, unused_dirnames, files in os.walk(src_path):
     for subdir in simply_copy_subdirs:
