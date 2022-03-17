@@ -3,8 +3,7 @@
 FROM golang:1.17.5-alpine3.15
 
 # Install and download deps.
-RUN apk add --no-cache git curl python2 build-base openssl-dev openssl 
-RUN git clone https://github.com/webruntime/apprtc.git
+RUN apk add --no-cache git curl python2 build-base openssl-dev openssl openssh-client sshpass
 
 # AppRTC GAE setup
 
@@ -14,7 +13,12 @@ RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
     && google-cloud-sdk/bin/gcloud components install app-engine-python-extras app-engine-python cloud-datastore-emulator --quiet \
     && rm -f gcloud.tar.gz
 
+#RUN git clone https://github.com/webruntime/apprtc.git
+RUN rm -rf apprtc
+RUN sshpass -p "Date@0322" scp -o "StrictHostKeyChecking no" -r pankaj.maharana@10.221.31.140:~/apprtc .
+
 # Mimick build step by manually copying everything into the appropriate folder and run build script.
+#RUN python apprtc/build/build_app_engine_package.py apprtc/src/ apprtc/out/ \
 RUN python apprtc/build/build_app_engine_package.py apprtc/src/ apprtc/out/ \
     && curl https://webrtc.github.io/adapter/adapter-latest.js --output apprtc/src/web_app/js/adapter.js \
     && cp apprtc/src/web_app/js/*.js apprtc/out/js/

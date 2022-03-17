@@ -57,6 +57,11 @@
     <video id="local-video" autoplay playsinline muted></video>
   </div>
 
+  <div>
+    <label for="uploadInput">Choose a video file:</label>
+    <input type="file" id="uploadInput" name="uploadInput" accept="video/*">
+  </div>
+
   <div id="room-selection" class="hidden">
     <h1>AppRTC</h1>
     <p id="instructions">Please enter a room name.</p>
@@ -75,9 +80,6 @@
       <ul id="recent-rooms-list"></ul>
     </div>
   </div>
-
-  <label for="uploadInput">Choose a video file:</label>
-  <input type="file" id="uploadInput" name="uploadInput" accept="video/*">
 
   <div id="video-file">
     <!--video id="mp4_video" src="../videos/Soch_Na_Sake_Airlift_720p.mp4" controls></video-->
