@@ -6,7 +6,7 @@
  *  tree.
  */
 
-.hidden {
+ .hidden {
   display: none;
 }
 
@@ -221,7 +221,7 @@ button {
   height: 2.75em;
   margin: 0 5px 20px 5px;
   padding: 0.5em 0.7em 0.5em 0.7em;
-  width: 8em;
+  width: 10em;
 }
 
 button:active {
@@ -279,6 +279,11 @@ label.error-label {
   margin: 0;
 }
 
+#video-input-label {
+  display: inline-block;
+  text-align: right;
+}
+
 #room-id-input-div {
   margin: 15px;
 }
@@ -291,6 +296,10 @@ h1 {
   font-weight: 300;
   margin: 0 0 0.8em 0;
   padding: 0 0 0.2em 0;
+}
+
+h2 {
+  font-weight: 200;
 }
 
 div#room-selection {

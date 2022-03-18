@@ -100,7 +100,8 @@ var AppController = function(loadingParams) {
     this.roomSelection_ = null;
     this.localStream_ = null;
     this.remoteVideoResetTimer_ = null;
-
+    this.localSource_ = null;
+  
     // If the params has a roomId specified, we should connect to that room
     // immediately. If not, show the room selection UI.
     if (this.loadingParams_.roomId) {
@@ -188,6 +189,8 @@ AppController.prototype.showRoomSelection_ = function() {
     this.roomSelection_ = null;
     if (this.localStream_) {
       this.attachLocalStream_();
+    } else if (this.localSource_) {
+      this.attachLocalSource_();
     }
   }.bind(this);
 };
@@ -284,6 +287,28 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
   if (this.remoteVideoResetTimer_) {
     clearTimeout(this.remoteVideoResetTimer_);
     this.remoteVideoResetTimer_ = null;
+  }
+};
+
+AppController.prototype.onLocalSourceAdded_ = function(source) {
+  trace('User has granted access to local media.');
+  this.localSource_ = source;
+
+  if (!this.roomSelection_) {
+    this.attachLocalSource_();
+  }
+};
+
+AppController.prototype.attachLocalSource_ = function() {
+  trace('Attaching local stream.');
+  this.localVideo_.src = this.localSource_;
+
+  this.displayStatus_('');
+  this.activate_(this.localVideo_);
+  this.show_(this.icons_);
+
+  if (!this.localSource_.stream() || this.localSource_.size === 0) {
+    this.hide_($(UI_CONSTANTS.muteVideoSvg));
   }
 };
 

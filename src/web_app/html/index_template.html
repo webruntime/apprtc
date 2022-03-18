@@ -25,23 +25,9 @@
   <link rel="icon" sizes="192x192" href="/images/webrtc-icon-192x192.png">
   <link rel="canonical" href="{{ room_link }}">
   <link rel="stylesheet" href="/css/main.css">
-
-  <script>
-    function handleFile(event) {
-      const selectedFile = document.getElementById('uploadInput').files[0];
-      var videoFilePath = (window.URL || window.webkitURL).createObjectURL(selectedFile);
-      console.log('videoFilePath: ', videoFilePath);
-      document.getElementById('mp4_video').src = videoFilePath;
-    }
-
-    function handle_file() {
-      const inputElement = document.getElementById("uploadInput");
-      inputElement.addEventListener("change", handleFile, false);
-    }
-  </script>
 </head>
 
-<body onload="handle_file()">
+<body>
   {% if header_message %}
   <header>
     {{ header_message }}
@@ -54,36 +40,27 @@
   <div id="videos">
     <video id="mini-video" autoplay playsinline muted></video>
     <video id="remote-video" autoplay playsinline></video>
-    <video id="local-video" autoplay playsinline muted></video>
-  </div>
-
-  <div>
-    <label for="uploadInput">Choose a video file:</label>
-    <input type="file" id="uploadInput" name="uploadInput" accept="video/*">
+    <video id="local-video" autoplay playsinline></video>
   </div>
 
   <div id="room-selection" class="hidden">
-    <h1>AppRTC</h1>
-    <p id="instructions">Please enter a room name.</p>
+    <h1>Watch Together</h1>
+    <p id="instructions">Please select video file and enter room name.</p>
     <div>
       <div id="room-id-input-div">
+        <input type="file" id="upload-input" accept="video/*">
         <input type="text" id="room-id-input" autofocus/>
         <label class="error-label hidden" for="room-id-input" id="room-id-input-label">Room name must be 5 or more characters and include only letters, numbers, underscore and hyphen.</label>
       </div>
       <div id="room-id-input-buttons">
-        <button id="join-button">JOIN</button>
-        <button id="random-button">RANDOM</button>
+        <button id="join-button">CREATE ROOM</button>
+        <button id="random-button">JOIN ROOM</button>
       </div>
     </div>
     <div id="recent-rooms">
       <p>Recently used rooms:</p>
       <ul id="recent-rooms-list"></ul>
     </div>
-  </div>
-
-  <div id="video-file">
-    <!--video id="mp4_video" src="../videos/Soch_Na_Sake_Airlift_720p.mp4" controls></video-->
-    <video id="mp4_video" src="" autoplay controls></video>
   </div>
 
   <div id="confirm-join-div" class="hidden">
@@ -192,6 +169,15 @@
         return;
       }
       appController = new AppController(loadingParams);
+
+      function handleFile(event) {
+        const selectedFile = document.getElementById('upload-input').files[0];
+        var videoFileObject = (window.URL || window.webkitURL).createObjectURL(selectedFile);
+        console.log('videoFile: ', videoFileObject);
+        appController.onLocalSourceAdded_(videoFileObject);
+      }
+      const inputElement = document.getElementById("upload-input");
+      inputElement.addEventListener("change", handleFile, false);
     }
 
     function onVisibilityChange() {
