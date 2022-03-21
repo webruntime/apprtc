@@ -93,10 +93,6 @@ div.warning {
   transform: rotateY(180deg);
 }
 
-#footer-elt {
-  display: none;
-}
-
 footer > div {
   background-color: black;
   bottom: 0;
@@ -208,11 +204,6 @@ label {
 }
 
 /*////// room selection start ///////////////////*/
-#recent-rooms-list {
-  list-style-type: none;
-  padding: 0 15px;
-}
-
 button {
   background-color: #eb6ccb;
   border: none;
@@ -376,7 +367,6 @@ svg:hover {
 }
 
 #mute-audio {
-  display: none;
   transition: 40ms;
 }
 

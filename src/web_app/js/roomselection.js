@@ -25,10 +25,6 @@ var RoomSelection = function(roomSelectionDiv,
       uiConstants.roomSelectionInputLabel);
   this.roomJoinButton_ = this.roomSelectionDiv_.querySelector(
       uiConstants.roomSelectionJoinButton);
-  this.roomRandomButton_ = this.roomSelectionDiv_.querySelector(
-      uiConstants.roomSelectionRandomButton);
-  this.roomRecentList_ = this.roomSelectionDiv_.querySelector(
-      uiConstants.roomSelectionRecentList);
 
   this.roomIdInput_.value = randomString(9);
   // Call onRoomIdInput_ now to validate initial state of input box.
@@ -41,8 +37,6 @@ var RoomSelection = function(roomSelectionDiv,
   this.roomIdInput_.addEventListener('keyup', this.roomIdKeyupListener_, false);
 
   this.roomRandomButtonListener_ = this.onRandomButton_.bind(this);
-  this.roomRandomButton_.addEventListener(
-      'click', this.roomRandomButtonListener_, false);
 
   this.roomJoinButtonListener_ = this.onJoinButton_.bind(this);
   this.roomJoinButton_.addEventListener(
@@ -62,8 +56,6 @@ RoomSelection.matchRandomRoomPattern = function(input) {
 RoomSelection.prototype.removeEventListeners = function() {
   this.roomIdInput_.removeEventListener('input', this.roomIdInputListener_);
   this.roomIdInput_.removeEventListener('keyup', this.roomIdKeyupListener_);
-  this.roomRandomButton_.removeEventListener(
-      'click', this.roomRandomButtonListener_);
   this.roomJoinButton_.removeEventListener(
       'click', this.roomJoinButtonListener_);
 };
@@ -80,26 +72,6 @@ RoomSelection.prototype.startBuildingRecentRoomList_ = function() {
 };
 
 RoomSelection.prototype.buildRecentRoomList_ = function(recentRooms) {
-  var lastChild = this.roomRecentList_.lastChild;
-  while (lastChild) {
-    this.roomRecentList_.removeChild(lastChild);
-    lastChild = this.roomRecentList_.lastChild;
-  }
-
-  for (var i = 0; i < recentRooms.length; ++i) {
-    // Create link in recent list
-    var li = document.createElement('li');
-    var href = document.createElement('a');
-    var linkText = document.createTextNode(recentRooms[i]);
-    href.appendChild(linkText);
-    href.href = location.origin + '/r/' + encodeURIComponent(recentRooms[i]);
-    li.appendChild(href);
-    this.roomRecentList_.appendChild(li);
-
-    // Set up click handler to avoid browser navigation.
-    href.addEventListener('click',
-        this.makeRecentlyUsedClickHandler_(recentRooms[i]).bind(this), false);
-  }
 };
 
 RoomSelection.prototype.onRoomIdInput_ = function() {

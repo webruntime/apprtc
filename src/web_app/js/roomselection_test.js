@@ -49,18 +49,13 @@ describe('Room selection Test', function() {
     this.inputBoxLabel_ = document.createElement('label');
     this.inputBoxLabel_.id = UI_CONSTANTS.roomSelectionInputLabel.substring(1);
 
-    this.randomButton_ = document.createElement('button');
-    this.randomButton_.id = UI_CONSTANTS.roomSelectionRandomButton.substring(1);
-
     this.joinButton_ = document.createElement('button');
     this.joinButton_.id = UI_CONSTANTS.roomSelectionJoinButton.substring(1);
 
     this.recentList_ = document.createElement('ul');
-    this.recentList_.id = UI_CONSTANTS.roomSelectionRecentList.substring(1);
 
     this.targetDiv_.appendChild(this.inputBox_);
     this.targetDiv_.appendChild(this.inputBoxLabel_);
-    this.targetDiv_.appendChild(this.randomButton_);
     this.targetDiv_.appendChild(this.joinButton_);
     this.targetDiv_.appendChild(this.recentList_);
 
@@ -106,12 +101,6 @@ describe('Room selection Test', function() {
     for (i = 0; i < invalidInputs.length; ++i) {
       testInput(invalidInputs[i], true);
     }
-  });
-
-  it('random button', function() {
-    this.inputBox_.value = '123';
-    this.randomButton_.click();
-    expect(this.inputBox_.value).toMatch(/[0-9]{9}/);
   });
 
   it('recent list has children', function(done) {
