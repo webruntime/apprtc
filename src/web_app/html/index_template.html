@@ -39,8 +39,8 @@
   -->
   <div id="videos">
     <video id="mini-video" autoplay playsinline muted></video>
+    <video id="local-video" playsinline></video>
     <video id="remote-video" autoplay playsinline></video>
-    <video id="local-video" autoplay playsinline></video>
   </div>
 
   <div id="room-selection" class="hidden">
@@ -68,7 +68,7 @@
     <button id="confirm-join-button">JOIN</button>
   </div>
 
-  <footer>
+  <footer id="footer-elt">
     <div id="sharing-div">
       <div id="room-link">Waiting for someone to join this room: <a id="room-link-href" href="{{ room_link }}" target="_blank">{{ room_link }}</a></div>
     </div>
@@ -172,9 +172,9 @@
 
       function handleFile(event) {
         const selectedFile = document.getElementById('upload-input').files[0];
-        var videoFileObject = (window.URL || window.webkitURL).createObjectURL(selectedFile);
-        console.log('videoFile: ', videoFileObject);
-        appController.onLocalSourceAdded_(videoFileObject);
+        var videoSrc = (window.URL || window.webkitURL).createObjectURL(selectedFile);
+        console.log('videoSrc: ', videoSrc);
+        appController.onLocalVideoSrcAdded_(videoSrc);
       }
       const inputElement = document.getElementById("upload-input");
       inputElement.addEventListener("change", handleFile, false);

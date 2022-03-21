@@ -27,7 +27,6 @@ var UI_CONSTANTS = {
   icons: '#icons',
   infoDiv: '#info-div',
   localVideo: '#local-video',
-  miniVideo: '#mini-video',
   muteAudioSvg: '#mute-audio',
   muteVideoSvg: '#mute-video',
   newRoomButton: '#new-room-button',
@@ -58,7 +57,6 @@ var AppController = function(loadingParams) {
   this.hangupSvg_ = $(UI_CONSTANTS.hangupSvg);
   this.icons_ = $(UI_CONSTANTS.icons);
   this.localVideo_ = $(UI_CONSTANTS.localVideo);
-  this.miniVideo_ = $(UI_CONSTANTS.miniVideo);
   this.sharingDiv_ = $(UI_CONSTANTS.sharingDiv);
   this.statusDiv_ = $(UI_CONSTANTS.statusDiv);
   this.turnInfoDiv_ = $(UI_CONSTANTS.turnInfoDiv);
@@ -98,10 +96,9 @@ var AppController = function(loadingParams) {
 
     this.roomLink_ = '';
     this.roomSelection_ = null;
-    this.localStream_ = null;
     this.remoteVideoResetTimer_ = null;
-    this.localSource_ = null;
-  
+    this.localVideoSrc_ = null;
+
     // If the params has a roomId specified, we should connect to that room
     // immediately. If not, show the room selection UI.
     if (this.loadingParams_.roomId) {
@@ -138,6 +135,9 @@ var AppController = function(loadingParams) {
 };
 
 AppController.prototype.createCall_ = function() {
+  if (this.localVideoSrc_)
+    this.loadingParams_.localVideo = this.localVideo_;
+
   var privacyLinks = $(UI_CONSTANTS.privacyLinks);
   this.hide_(privacyLinks);
   this.call_ = new Call(this.loadingParams_);
@@ -161,7 +161,6 @@ AppController.prototype.createCall_ = function() {
   this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
   this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
   this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
-  this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
 
   this.call_.onsignalingstatechange =
       this.infoBox_.updateInfoDiv.bind(this.infoBox_);
@@ -187,11 +186,11 @@ AppController.prototype.showRoomSelection_ = function() {
 
     this.roomSelection_.removeEventListeners();
     this.roomSelection_ = null;
-    if (this.localStream_) {
-      this.attachLocalStream_();
-    } else if (this.localSource_) {
-      this.attachLocalSource_();
+
+    if (this.localVideoSrc_) {
+      this.attachLocalVideoSrc_();
     }
+
   }.bind(this);
 };
 
@@ -254,6 +253,8 @@ AppController.prototype.onRemoteHangup_ = function() {
 };
 
 AppController.prototype.onRemoteSdpSet_ = function(hasRemoteVideo) {
+  trace('hasRemoteVideo: ' + hasRemoteVideo);
+
   if (hasRemoteVideo) {
     trace('Waiting for remote video.');
     this.waitForRemoteVideo_();
@@ -279,10 +280,10 @@ AppController.prototype.waitForRemoteVideo_ = function() {
 AppController.prototype.onRemoteStreamAdded_ = function(stream) {
   this.deactivate_(this.sharingDiv_);
   this.displayTurnStatus_('');
+
   trace('Remote stream added.');
   this.remoteVideo_.srcObject = stream;
   this.infoBox_.getRemoteTrackIds(stream);
-
 
   if (this.remoteVideoResetTimer_) {
     clearTimeout(this.remoteVideoResetTimer_);
@@ -290,51 +291,37 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
   }
 };
 
-AppController.prototype.onLocalSourceAdded_ = function(source) {
+AppController.prototype.onLocalVideoSrcAdded_ = function(videoSrc) {
   trace('User has granted access to local media.');
-  this.localSource_ = source;
+  this.localVideoSrc_ = videoSrc;
 
   if (!this.roomSelection_) {
-    this.attachLocalSource_();
+    this.attachLocalVideoSrc_();
   }
+
+  /*
+  this.displayStatus_('');
+  this.activate_(this.localVideoSrc_);
+  this.show_(this.icons_);
+  */
 };
 
-AppController.prototype.attachLocalSource_ = function() {
+AppController.prototype.attachLocalVideoSrc_ = function() {
   trace('Attaching local stream.');
-  this.localVideo_.src = this.localSource_;
+  this.localVideo_.src = this.localVideoSrc_;
 
   this.displayStatus_('');
   this.activate_(this.localVideo_);
   this.show_(this.icons_);
 
-  if (!this.localSource_.stream() || this.localSource_.size === 0) {
-    this.hide_($(UI_CONSTANTS.muteVideoSvg));
-  }
-};
-
-AppController.prototype.onLocalStreamAdded_ = function(stream) {
-  trace('User has granted access to local media.');
-  this.localStream_ = stream;
-  this.infoBox_.getLocalTrackIds(this.localStream_);
-
-  if (!this.roomSelection_) {
-    this.attachLocalStream_();
-  }
-};
-
-AppController.prototype.attachLocalStream_ = function() {
-  trace('Attaching local stream.');
-  this.localVideo_.srcObject = this.localStream_;
-
-  this.displayStatus_('');
-  this.activate_(this.localVideo_);
-  this.show_(this.icons_);
+/*
   if (this.localStream_.getVideoTracks().length === 0) {
     this.hide_($(UI_CONSTANTS.muteVideoSvg));
   }
   if (this.localStream_.getAudioTracks().length === 0) {
     this.hide_($(UI_CONSTANTS.muteAudioSvg));
   }
+*/
 };
 
 AppController.prototype.transitionToActive_ = function() {
@@ -346,16 +333,15 @@ AppController.prototype.transitionToActive_ = function() {
   trace('Call setup time: ' + (connectTime - this.call_.startTime).toFixed(0) +
       'ms.');
 
-  // Prepare the remote video and PIP elements.
-  trace('reattachMediaStream: ' + this.localVideo_.srcObject);
-  this.miniVideo_.srcObject = this.localVideo_.srcObject;
-
   // Transition opacity from 0 to 1 for the remote and mini videos.
   this.activate_(this.remoteVideo_);
-  this.activate_(this.miniVideo_);
-  // Transition opacity from 1 to 0 for the local video.
-  this.deactivate_(this.localVideo_);
-  this.localVideo_.srcObject = null;
+
+  if (!this.localVideoSrc_) {
+    // Transition opacity from 1 to 0 for the local video.
+    this.deactivate_(this.localVideo_);
+    this.localVideo_.srcObject  = null;
+  }
+
   // Rotate the div containing the videos 180 deg with a CSS transform.
   this.activate_(this.videosDiv_);
   this.show_(this.hangupSvg_);
@@ -378,15 +364,11 @@ AppController.prototype.transitionToWaiting_ = function() {
     }.bind(this), 800);
   }
 
-  // Set localVideo.srcObject now so that the local stream won't be lost if the
-  // call is restarted before the timeout.
-  this.localVideo_.srcObject = this.miniVideo_.srcObject;
-
   // Transition opacity from 0 to 1 for the local video.
   this.activate_(this.localVideo_);
+
   // Transition opacity from 1 to 0 for the remote and mini videos.
   this.deactivate_(this.remoteVideo_);
-  this.deactivate_(this.miniVideo_);
 };
 
 AppController.prototype.transitionToDone_ = function() {
@@ -394,7 +376,7 @@ AppController.prototype.transitionToDone_ = function() {
   this.remoteVideo_.oncanplay = undefined;
   this.deactivate_(this.localVideo_);
   this.deactivate_(this.remoteVideo_);
-  this.deactivate_(this.miniVideo_);
+
   this.hide_(this.hangupSvg_);
   this.activate_(this.rejoinDiv_);
   this.show_(this.rejoinDiv_);
@@ -444,9 +426,6 @@ AppController.prototype.onKeyPress_ = function(event) {
       return false;
     case 'q':
       this.hangup_();
-      return false;
-    case 'l':
-      this.toggleMiniVideo_();
       return false;
     default:
       return;
@@ -512,14 +491,6 @@ AppController.prototype.toggleFullScreen_ = function() {
     document.body.requestFullScreen();
   }
   this.fullscreenIconSet_.toggle();
-};
-
-AppController.prototype.toggleMiniVideo_ = function() {
-  if (this.miniVideo_.classList.contains('active')) {
-    this.deactivate_(this.miniVideo_);
-  } else {
-    this.activate_(this.miniVideo_);
-  }
 };
 
 AppController.prototype.hide_ = function(element) {

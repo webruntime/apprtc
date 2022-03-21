@@ -22,6 +22,7 @@ var Call = function(params) {
 
   this.channel_ = new SignalingChannel(params.wssUrl, params.wssPostUrl);
   this.channel_.onmessage = this.onRecvSignalingChannelMessage_.bind(this);
+  this.localVideo_ = params.localVideo;
 
   this.pcClient_ = null;
   this.localStream_ = null;
@@ -74,7 +75,7 @@ Call.prototype.hangup = function(async) {
   if (this.localStream_) {
     if (typeof this.localStream_.getTracks === 'undefined') {
       // Support legacy browsers, like phantomJs we use to run tests.
-      this.localStream_.stop();
+      //this.localStream_.stop();
     } else {
       this.localStream_.getTracks().forEach(function(track) {
         track.stop();
@@ -201,6 +202,19 @@ Call.prototype.getPeerConnectionStats = function(callback) {
 };
 
 Call.prototype.toggleVideoMute = function() {
+  if (!this.localVideo_)
+    return;
+
+  trace('Toggling video play state. ' + (!this.localVideo_.paused ? 'playing.' : 'paused.'));
+  if (!this.localVideo_.paused) {
+    this.localVideo_.pause();
+  } else {
+    this.localVideo_.play();
+  }
+
+  trace('Video ' + (!this.localVideo_.paused ? 'playing.' : 'paused.'));
+  return;
+
   var videoTracks = this.localStream_.getVideoTracks();
   if (videoTracks.length === 0) {
     trace('No local video available.');
@@ -215,6 +229,7 @@ Call.prototype.toggleVideoMute = function() {
 };
 
 Call.prototype.toggleAudioMute = function() {
+  return;
   var audioTracks = this.localStream_.getAudioTracks();
   if (audioTracks.length === 0) {
     trace('No local audio available.');
@@ -283,46 +298,27 @@ Call.prototype.connectToRoom_ = function(roomId) {
 
 // Asynchronously request user media if needed.
 Call.prototype.maybeGetMedia_ = function() {
-  // mediaConstraints.audio and mediaConstraints.video could be objects, so
-  // check '!=== false' instead of '=== true'.
-  var needStream = (this.params_.mediaConstraints.audio !== false ||
-                    this.params_.mediaConstraints.video !== false);
-  var mediaPromise = null;
-  if (needStream) {
-    var mediaConstraints = this.params_.mediaConstraints;
+  var mediaPromise = mediaPromise = Promise.resolve();
 
-    mediaPromise = navigator.mediaDevices.getUserMedia(mediaConstraints)
-        .catch(function(error) {
-          if (error.name !== 'NotFoundError') {
-            throw error;
-          }
-          return navigator.mediaDevices.enumerateDevices()
-              .then(function(devices) {
-                var cam = devices.find(function(device) {
-                  return device.kind === 'videoinput';
-                });
-                var mic = devices.find(function(device) {
-                  return device.kind === 'audioinput';
-                });
-                var constraints = {
-                  video: cam && mediaConstraints.video,
-                  audio: mic && mediaConstraints.audio
-                };
-                return navigator.mediaDevices.getUserMedia(constraints);
-              });
-        })
-        .then(function(stream) {
-          trace('Got access to local media with mediaConstraints:\n' +
-          '  \'' + JSON.stringify(mediaConstraints) + '\'');
+  if (this.localVideo_) {
+    var mediaStream = null;
+    if (this.localVideo_.captureStream) {
+      mediaStream = this.localVideo_.captureStream();
+    } else if (leftVideo.mozCaptureStream) {
+      mediaStream = this.localVideo_.mozCaptureStream();
+    } else {
+      console.log('captureStream() not supported');
+      throw error;
+    }
 
-          this.onUserMediaSuccess_(stream);
-        }.bind(this)).catch(function(error) {
-          this.onError_('Error getting user media: ' + error.message);
-          this.onUserMediaError_(error);
-        }.bind(this));
-  } else {
-    mediaPromise = Promise.resolve();
+    if (mediaStream) {
+      this.onLocalMediaSuccess_(mediaStream);
+    } else {
+      this.onError_('Error getting user media: ' + error.message);
+      this.onUserMediaError_(error);
+    }
   }
+
   return mediaPromise;
 };
 
@@ -363,7 +359,7 @@ Call.prototype.maybeGetIceServers_ = function() {
   return iceServerPromise;
 };
 
-Call.prototype.onUserMediaSuccess_ = function(stream) {
+Call.prototype.onLocalMediaSuccess_ = function(stream) {
   this.localStream_ = stream;
   if (this.onlocalstreamadded) {
     this.onlocalstreamadded(stream);
@@ -428,10 +424,16 @@ Call.prototype.startSignaling_ = function() {
 
   this.maybeCreatePcClientAsync_()
       .then(function() {
+        if (this.localVideo_) {
+          trace('Start local video play.');
+          this.localVideo_.play();
+        }
+
         if (this.localStream_) {
           trace('Adding local stream.');
           this.pcClient_.addStream(this.localStream_);
         }
+
         if (this.params_.isInitiator) {
           this.pcClient_.startAsCaller(this.params_.offerOptions);
         } else {

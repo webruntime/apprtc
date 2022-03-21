@@ -93,6 +93,10 @@ div.warning {
   transform: rotateY(180deg);
 }
 
+#footer-elt {
+  display: none;
+}
+
 footer > div {
   background-color: black;
   bottom: 0;
@@ -372,6 +376,7 @@ svg:hover {
 }
 
 #mute-audio {
+  display: none;
   transition: 40ms;
 }
 
