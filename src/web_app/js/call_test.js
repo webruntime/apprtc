@@ -92,7 +92,7 @@ describe('Call test', function() {
     var call = new Call(this.params_);
     var stopCalled = false;
     var closeCalled = false;
-    call.localStream_ = {
+    call.localVideoStream_ = {
       stop: function() {
         stopCalled = true;
       }

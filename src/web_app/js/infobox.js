@@ -16,8 +16,8 @@
 
 var InfoBox = function(infoDiv, call, versionInfo) {
   this.infoDiv_ = infoDiv;
-  this.remoteCamera_ = document.getElementById('remote-camera');
-  this.localCamera_ = document.getElementById('mini-camera');
+  this.remoteVideo_ = document.getElementById('remote-video');
+  this.localVideo_ = document.getElementById('mini-video');
   this.call_ = call;
   this.versionInfo_ = versionInfo;
 
@@ -47,14 +47,14 @@ var InfoBox = function(infoDiv, call, versionInfo) {
   // Used to calculate FPS for the video element.
   this.localDecodedFrames_ = 0;
   this.localStartTime_ = 0;
-  this.localCamera_.addEventListener('playing', function(event) {
+  this.localVideo_.addEventListener('playing', function(event) {
     this.localDecodedFrames_ = event.target.webkitDecodedFrameCount;
     this.localStartTime_ = new Date().getTime();
   }.bind(this));
 
   this.remoteDecodedFrames_ = 0;
   this.remoteStartTime_ = 0;
-  this.remoteCamera_.addEventListener('playing', function(event) {
+  this.remoteVideo_.addEventListener('playing', function(event) {
     this.remoteDecodedFrames_ = event.target.webkitDecodedFrameCount;
     this.remoteStartTime_ = new Date().getTime();
   }.bind(this));
@@ -320,7 +320,7 @@ InfoBox.prototype.buildStatsSection_ = function() {
     txVideoPliCount = txVideo.pliCount;
     txVideoFirCount = txVideo.firCount;
     txVideoNackCount = txVideo.nackCount;
-    txVideoFps = calculateFps(this.remoteCamera_, this.remoteDecodedFrames_,
+    txVideoFps = calculateFps(this.remoteVideo_, this.remoteDecodedFrames_,
         this.remoteStartTime_, 'local', this.updateDecodedFramesCallback_);
     txVideoBitrate = computeBitrate(txVideo, txPrevVideo, 'bytesSent');
     txVideoPacketRate = computeRate(txVideo, txPrevVideo, 'packetsSent');
@@ -342,7 +342,7 @@ InfoBox.prototype.buildStatsSection_ = function() {
     rxVideoPliCount = rxVideo.pliCount;
     rxVideoFirCount = rxVideo.firCount;
     rxVideoNackCount = rxVideo.nackCount;
-    rxVideoFps = calculateFps(this.remoteCamera_, this.remoteDecodedFrames_,
+    rxVideoFps = calculateFps(this.remoteVideo_, this.remoteDecodedFrames_,
         this.remoteStartTime_, 'remote', this.updateDecodedFramesCallback_);
     rxVideoBitrate = computeBitrate(rxVideo, rxPrevVideo, 'bytesReceived');
     rxVideoPacketRate = computeRate(rxVideo, rxPrevVideo, 'packetsReceived');

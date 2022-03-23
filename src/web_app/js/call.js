@@ -24,7 +24,7 @@ var Call = function(params) {
   this.channel_.onmessage = this.onRecvSignalingChannelMessage_.bind(this);
 
   this.pcClient_ = null;
-  this.localStream_ = null;
+  this.localVideoStream_ = null;
   this.errorMessageQueue_ = [];
   this.startTime = null;
 
@@ -71,16 +71,16 @@ Call.prototype.restart = function() {
 Call.prototype.hangup = function(async) {
   this.startTime = null;
 
-  if (this.localStream_) {
-    if (typeof this.localStream_.getTracks === 'undefined') {
+  if (this.localVideoStream_) {
+    if (typeof this.localVideoStream_.getTracks === 'undefined') {
       // Support legacy browsers, like phantomJs we use to run tests.
-      this.localStream_.stop();
+      this.localVideoStream_.stop();
     } else {
-      this.localStream_.getTracks().forEach(function(track) {
+      this.localVideoStream_.getTracks().forEach(function(track) {
         track.stop();
       });
     }
-    this.localStream_ = null;
+    this.localVideoStream_ = null;
   }
 
   if (!this.params_.roomId) {
@@ -201,7 +201,7 @@ Call.prototype.getPeerConnectionStats = function(callback) {
 };
 
 Call.prototype.toggleVideoMute = function() {
-  var videoTracks = this.localStream_.getVideoTracks();
+  var videoTracks = this.localVideoStream_.getVideoTracks();
   if (videoTracks.length === 0) {
     trace('No local video available.');
     return;
@@ -215,7 +215,7 @@ Call.prototype.toggleVideoMute = function() {
 };
 
 Call.prototype.toggleAudioMute = function() {
-  var audioTracks = this.localStream_.getAudioTracks();
+  var audioTracks = this.localVideoStream_.getAudioTracks();
   if (audioTracks.length === 0) {
     trace('No local audio available.');
     return;
@@ -364,7 +364,7 @@ Call.prototype.maybeGetIceServers_ = function() {
 };
 
 Call.prototype.onUserMediaSuccess_ = function(stream) {
-  this.localStream_ = stream;
+  this.localVideoStream_ = stream;
   if (this.onlocalstreamadded) {
     this.onlocalstreamadded(stream);
   }
@@ -428,9 +428,9 @@ Call.prototype.startSignaling_ = function() {
 
   this.maybeCreatePcClientAsync_()
       .then(function() {
-        if (this.localStream_) {
+        if (this.localVideoStream_) {
           trace('Adding local stream.');
-          this.pcClient_.addStream(this.localStream_);
+          this.pcClient_.addStream(this.localVideoStream_);
         }
         if (this.params_.isInitiator) {
           this.pcClient_.startAsCaller(this.params_.offerOptions);

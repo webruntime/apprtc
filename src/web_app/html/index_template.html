@@ -20,7 +20,7 @@
 
   <base target="_blank">
 
-  <title>Watch Together</title>
+  <title>WatchTogether</title>
 
   <link rel="icon" sizes="192x192" href="/images/webrtc-icon-192x192.png">
   <link rel="canonical" href="{{ room_link }}">
@@ -39,17 +39,16 @@
    * appcontroller.js.
   -->
   <div id="videos">
-    <video id="mini-camera" autoplay playsinline muted></video>
-    <video id="remote-camera" autoplay playsinline></video>
-    <video id="local-camera" autoplay playsinline muted></video>
+    <video id="mini-video" autoplay playsinline muted></video>
+    <video id="remote-video" autoplay playsinline></video>
+    <video id="local-video" autoplay playsinline muted></video>
   </div>
 
   <div id="room-selection" class="hidden">
     <h1>Watch Together</h1>
-    <p id="instructions">Please select video file and enter room name.</p>
+    <p id="room-id-instructions">Please enter room name.</p>
     <div>
       <div id="room-id-input-div">
-        <input type="file" id="upload-input" accept="video/*">
         <input type="text" id="room-id-input" autofocus/>
         <label class="error-label hidden" for="room-id-input" id="room-id-input-label">Room name must be 5 or more characters and include only letters, numbers, underscore and hyphen.</label>
       </div>
@@ -68,16 +67,23 @@
     <div id="sharing-div">
       <div id="room-link">Waiting for someone to join this room: <a id="room-link-href" href="{{ room_link }}" target="_blank">{{ room_link }}</a></div>
     </div>
-    <div id="info-div">Code for AppRTC is available from <a href="http://github.com/webrtc/apprtc" title="GitHub repo for AppRTC">github.com/webrtc/apprtc</a></div>
+    <div id="info-div">Code for Watch Together is available from <a href="http://github.com/webruntime/apprtc" title="GitHub repo for AppRTC">github.com/webrtc/apprtc</a></div>
     <div id="status-div"></div>
     <div id="turn-info-div"></div>
-    <div id="rejoin-div" class="hidden"><span>You have left the call.</span> <button id="rejoin-button">REJOIN</button><button id="new-room-button">NEW ROOM</button></div>
+    <div id="rejoin-div" class="hidden"><span>You have left the call.</span> <button id="rejoin-button">REJOIN</button><button id="new-room-button">CREATE NEW ROOM</button></div>
   </footer>
 
-  <div id="icons" class="hidden">
+  <div id="video-selection" class="hidden">
+    <p id="video-file-instructions">Please select video file.</p>
+    <div>
+      <div id="video-file-input-div">
+        <input type="file" id="video-file-input" accept="video/*">
+      </div>
+    </div>
+  </div>
 
+  <div id="icons" class="hidden">
     <svg id="mute-audio" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewbox="-10 -10 68 68">
-    <title>title</title>
       <circle cx="24" cy="24" r="34">
         <title>Mute audio</title>
       </circle>
@@ -165,6 +171,15 @@
         return;
       }
       appController = new AppController(loadingParams);
+
+      function handleVideoFileInput(event) {
+        const selectedFile = document.getElementById('video-file-input').files[0];
+        var videoFileObj = (window.URL || window.webkitURL).createObjectURL(selectedFile);
+        console.log('localVideoFileObject: ', videoFileObj);
+        appController.onLocalVideoFileAdded_(videoFileObj);
+      }
+      const inputElement = document.getElementById("video-file-input");
+      inputElement.addEventListener("change", handleVideoFileInput, false);
     }
 
     function onVisibilityChange() {
