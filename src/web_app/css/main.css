@@ -141,11 +141,9 @@ label {
   border: 1px solid gray;
   bottom: 20px;
   left: 20px;
-  /* video div is flipped horizontally when active*/
   max-height: 17%;
   max-width: 17%;
   opacity: 0;
-  position: absolute;
   transition: opacity 1s;
 }
 
@@ -154,7 +152,7 @@ label {
   z-index: 2;
 }
 
-#local-video {
+#local-camera {
   height: 100%;
   max-height: 100%;
   max-width: 100%;
@@ -166,6 +164,31 @@ label {
   transform: scale(-1, 1);
   transition: opacity 1s;
   width: 100%;
+  position: absolute;
+  left: 0px;
+}
+
+#local-video {
+  display: block;
+  height: 100%;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: cover;  /* no letterboxing */
+  opacity: 0;
+  -moz-transform: scale(-1, 1);
+  -ms-transform: scale(-1, 1);
+  -o-transform: scale(-1, 1);
+  -webkit-transform: scale(-1, 1);
+  transform: scale(-1, 1);
+  transition: opacity 1s;
+  width: 100%;
+  position: absolute;
+  left: 0px;
+}
+
+#local-video.active {
+  opacity: 1;
+  z-index: 7;
 }
 
 #remote-video {
@@ -175,7 +198,6 @@ label {
   max-width: 100%;
   object-fit: cover;  /* no letterboxing */
   opacity: 0;
-  position: absolute;
   -moz-transform: rotateY(180deg);
   -ms-transform: rotateY(180deg);
   -o-transform: rotateY(180deg);
@@ -183,6 +205,8 @@ label {
   transform: rotateY(180deg);
   transition: opacity 1s;
   width: 100%;
+  position: absolute;
+  left: 0px;
 }
 
 #remote-video.active {
@@ -315,6 +339,8 @@ p {
   position: absolute;
   transition: all 1s;
   z-index: 1;
+  margin-left: 20px;
+  margin-top: 15px;
 }
 
 #video-selection.active {

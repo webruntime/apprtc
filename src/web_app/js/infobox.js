@@ -17,7 +17,7 @@
 var InfoBox = function(infoDiv, call, versionInfo) {
   this.infoDiv_ = infoDiv;
   this.remoteVideo_ = document.getElementById('remote-video');
-  this.localVideo_ = document.getElementById('mini-video');
+  this.localCamera_ = document.getElementById('mini-video');
   this.call_ = call;
   this.versionInfo_ = versionInfo;
 
@@ -47,7 +47,7 @@ var InfoBox = function(infoDiv, call, versionInfo) {
   // Used to calculate FPS for the video element.
   this.localDecodedFrames_ = 0;
   this.localStartTime_ = 0;
-  this.localVideo_.addEventListener('playing', function(event) {
+  this.localCamera_.addEventListener('playing', function(event) {
     this.localDecodedFrames_ = event.target.webkitDecodedFrameCount;
     this.localStartTime_ = new Date().getTime();
   }.bind(this));

@@ -29,11 +29,6 @@
 </head>
 
 <body>
-  {% if header_message %}
-  <header>
-    {{ header_message }}
-  </header>
-  {% endif %}
   <!--
    * Keep the HTML id attributes in sync with |UI_CONSTANTS| defined in
    * appcontroller.js.
@@ -41,7 +36,18 @@
   <div id="videos">
     <video id="mini-video" autoplay playsinline muted></video>
     <video id="remote-video" autoplay playsinline></video>
+
+    <video id="local-camera" autoplay playsinline muted></video>
     <video id="local-video" autoplay playsinline muted></video>
+  </div>
+
+  <div id="video-selection" class="hidden">
+    <p id="video-file-instructions">Please select video file.</p>
+    <div>
+      <div id="video-file-input-div">
+        <input type="file" id="video-file-input" accept="video/*">
+      </div>
+    </div>
   </div>
 
   <div id="room-selection" class="hidden">
@@ -72,15 +78,6 @@
     <div id="turn-info-div"></div>
     <div id="rejoin-div" class="hidden"><span>You have left the call.</span> <button id="rejoin-button">REJOIN</button><button id="new-room-button">CREATE NEW ROOM</button></div>
   </footer>
-
-  <div id="video-selection" class="hidden">
-    <p id="video-file-instructions">Please select video file.</p>
-    <div>
-      <div id="video-file-input-div">
-        <input type="file" id="video-file-input" accept="video/*">
-      </div>
-    </div>
-  </div>
 
   <div id="icons" class="hidden">
     <svg id="mute-audio" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewbox="-10 -10 68 68">
@@ -175,8 +172,8 @@
       function handleVideoFileInput(event) {
         const selectedFile = document.getElementById('video-file-input').files[0];
         var videoFileObj = (window.URL || window.webkitURL).createObjectURL(selectedFile);
-        console.log('localVideoFileObject: ', videoFileObj);
-        appController.onLocalVideoFileAdded_(videoFileObj);
+        console.log('local Video File Object: ', videoFileObj);
+        appController.attachLocalVideoFileObj_(videoFileObj);
       }
       const inputElement = document.getElementById("video-file-input");
       inputElement.addEventListener("change", handleVideoFileInput, false);
