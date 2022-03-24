@@ -80,7 +80,16 @@ PeerConnectionClient.prototype.addStream = function(stream) {
   if (!this.pc_) {
     return;
   }
+  trace(' addStream stream id=' + stream.id);
   this.pc_.addStream(stream);
+};
+
+PeerConnectionClient.prototype.removeStream = function(stream) {
+  if (!this.pc_) {
+    return;
+  }
+  trace(' removeStream stream id=' + stream.id);
+  this.pc_.removeStream(stream);
 };
 
 PeerConnectionClient.prototype.startAsCaller = function(offerOptions) {

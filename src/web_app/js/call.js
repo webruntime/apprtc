@@ -40,12 +40,18 @@ var Call = function(params) {
   this.onsignalingstatechange = null;
   this.onturnstatusmessage = null;
 
+  this.getCameraPromise_ = null;
   this.getMediaPromise_ = null;
   this.getIceServersPromise_ = null;
+
+  this.getLocalVideoStream_ = null;
+  this.localVideoStream_ = null;
+
   this.requestMediaAndIceServers_();
 };
 
 Call.prototype.requestMediaAndIceServers_ = function() {
+  this.getCameraPromise_ = this.maybeGetCamera_();
   this.getMediaPromise_ = this.maybeGetMedia_();
   this.getIceServersPromise_ = this.maybeGetIceServers_();
 };
@@ -63,7 +69,7 @@ Call.prototype.start = function(roomId) {
 
 Call.prototype.restart = function() {
   // Reinitialize the promises so the media gets hooked up as a result
-  // of calling maybeGetMedia_.
+  // of calling maybeGetCamera_.
   this.requestMediaAndIceServers_();
   this.start(this.params_.previousRoomId);
 };
@@ -234,6 +240,8 @@ Call.prototype.toggleAudioMute = function() {
 // WebSocket connection is opened using |wss_url| followed by a subsequent
 // registration once GAE registration completes.
 Call.prototype.connectToRoom_ = function(roomId) {
+  trace("connectToRoom_");
+
   this.params_.roomId = roomId;
   // Asynchronously open a WebSocket connection to WSS.
   // TODO(jiayl): We don't need to wait for the signaling channel to open before
@@ -270,7 +278,7 @@ Call.prototype.connectToRoom_ = function(roomId) {
     // and have media and TURN. Since we send candidates as soon as the peer
     // connection generates them we need to wait for the signaling channel to be
     // ready.
-    Promise.all([this.getIceServersPromise_, this.getMediaPromise_])
+    Promise.all([this.getIceServersPromise_, this.getCameraPromise_, this.getMediaPromise_])
         .then(function() {
           this.startSignaling_();
         }.bind(this)).catch(function(error) {
@@ -282,7 +290,9 @@ Call.prototype.connectToRoom_ = function(roomId) {
 };
 
 // Asynchronously request user media if needed.
-Call.prototype.maybeGetMedia_ = function() {
+Call.prototype.maybeGetCamera_ = function() {
+  trace("maybeGetCamera_");
+
   // mediaConstraints.audio and mediaConstraints.video could be objects, so
   // check '!=== false' instead of '=== true'.
   var needStream = (this.params_.mediaConstraints.audio !== false ||
@@ -314,8 +324,8 @@ Call.prototype.maybeGetMedia_ = function() {
         .then(function(stream) {
           trace('Got access to local media with mediaConstraints:\n' +
           '  \'' + JSON.stringify(mediaConstraints) + '\'');
-
-          this.onUserMediaSuccess_(stream);
+          this.onGetCameraSuccess_(stream);
+          this.updateLocalVideoStream_();
         }.bind(this)).catch(function(error) {
           this.onError_('Error getting user media: ' + error.message);
           this.onUserMediaError_(error);
@@ -326,8 +336,22 @@ Call.prototype.maybeGetMedia_ = function() {
   return mediaPromise;
 };
 
+Call.prototype.maybeGetMedia_ = function() {
+  trace("maybeGetMedia_");
+
+  if (this.localVideoStream_) {
+    trace("maybeGetMedia_ localVideoStream_= " + this.localVideoStream_); 
+    return this.localVideoStream_; 
+  }
+
+  var mediaPromise = Promise.resolve();
+  return mediaPromise;
+};
+
 // Asynchronously request an ICE server if needed.
 Call.prototype.maybeGetIceServers_ = function() {
+  trace("maybeGetIceServers_");
+
   var shouldRequestIceServers =
       (this.params_.iceServerRequestUrl &&
       this.params_.iceServerRequestUrl.length > 0 &&
@@ -363,10 +387,18 @@ Call.prototype.maybeGetIceServers_ = function() {
   return iceServerPromise;
 };
 
-Call.prototype.onUserMediaSuccess_ = function(stream) {
+Call.prototype.onGetCameraSuccess_ = function(stream) {
+  trace("onGetCameraSuccess_= " + stream);
   this.localCameraStream_ = stream;
   if (this.onlocalstreamadded) {
     this.onlocalstreamadded(stream);
+  }
+};
+
+Call.prototype.updateLocalVideoStream_ = function() {
+  if (this.getLocalVideoStream_) {
+    this.localVideoStream_ = this.getLocalVideoStream_();
+    trace("updateLocalVideoStream_ localVideoStream_= " + this.localVideoStream_); 
   }
 };
 
@@ -379,6 +411,8 @@ Call.prototype.onUserMediaError_ = function(error) {
 };
 
 Call.prototype.maybeCreatePcClientAsync_ = function() {
+  trace("maybeCreatePcClientAsync_");
+
   return new Promise(function(resolve, reject) {
     if (this.pcClient_) {
       resolve();
@@ -428,10 +462,16 @@ Call.prototype.startSignaling_ = function() {
 
   this.maybeCreatePcClientAsync_()
       .then(function() {
+        if (this.localVideoStream_) {
+          trace('Adding local video stream.');
+          this.pcClient_.addStream(this.localVideoStream_);
+        }
+
         if (this.localCameraStream_) {
-          trace('Adding local stream.');
+          trace('Adding local camera stream.');
           this.pcClient_.addStream(this.localCameraStream_);
         }
+
         if (this.params_.isInitiator) {
           this.pcClient_.startAsCaller(this.params_.offerOptions);
         } else {

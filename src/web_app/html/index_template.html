@@ -173,7 +173,7 @@
         const selectedFile = document.getElementById('video-file-input').files[0];
         var videoFileObj = (window.URL || window.webkitURL).createObjectURL(selectedFile);
         console.log('local Video File Object: ', videoFileObj);
-        appController.attachLocalVideoFileObj_(videoFileObj);
+        appController.setLocalVideoFile_(videoFileObj);
       }
       const inputElement = document.getElementById("video-file-input");
       inputElement.addEventListener("change", handleVideoFileInput, false);
