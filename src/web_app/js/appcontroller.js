@@ -145,8 +145,6 @@ var AppController = function(loadingParams) {
 };
 
 AppController.prototype.createCall_ = function() {
-  trace('createCall_.');
-
   var privacyLinks = $(UI_CONSTANTS.privacyLinks);
   this.hide_(privacyLinks);
   this.call_ = new Call(this.loadingParams_);
@@ -187,12 +185,9 @@ AppController.prototype.createCall_ = function() {
 };
 
 AppController.prototype.showRoomSelection_ = function() {
-  trace('showRoomSelection_.');
-
   var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
   this.roomSelection_ = new RoomSelection(roomSelectionDiv, UI_CONSTANTS);
 
-  trace(' showRoomSelection_ localVideoFileObj_= ' + this.localVideoFileObj_);
   if (this.localVideoFileObj_) {
     document.getElementById("video-file-input").value = "";
     this.localVideoFileObj_ = null;
@@ -202,7 +197,6 @@ AppController.prototype.showRoomSelection_ = function() {
 
   this.show_(roomSelectionDiv);
   this.roomSelection_.onRoomSelected = function(roomName) {
-    trace(' onRoomSelected localVideoFileObj_= ' + this.localVideoFileObj_);
     if (!this.localVideoFileObj_) {
       alert("Select a video file to stream.");
       return;
@@ -234,7 +228,6 @@ AppController.prototype.setupUi_ = function() {
 };
 
 AppController.prototype.finishCallSetup_ = function(roomId) {
-  trace('finishCallSetup_.');
   this.call_.start(roomId);
   this.setupUi_();
 
@@ -317,15 +310,12 @@ AppController.prototype.waitForRemoteVideo_ = function() {
 };
 
 AppController.prototype.onRemoteStreamAdded_ = function(stream) {
-  trace('onRemoteStreamAdded_.');
-
   this.deactivate_(this.sharingDiv_);
   this.displayTurnStatus_('');
 
   if (!this.miniVideo_.srcObject || this.remoteCameraStreamId_ == stream.id) {
     this.miniVideo_.srcObject = stream;
     this.remoteCameraStreamId_ = stream.id;
-    trace('remoteCameraStreamId_= ' + this.remoteCameraStreamId_);
 
     if (this.localVideoFileObj_ && this.remoteVideoResetTimer_) {
       clearTimeout(this.remoteVideoResetTimer_);
@@ -340,7 +330,6 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
   if (!this.remoteVideo_.srcObject || this.remoteVideoStreamId_ == stream.id) {
     this.remoteVideo_.srcObject = stream;
     this.remoteVideoStreamId_ = stream.id;
-    trace('remoteVideoStreamId_= ' + this.remoteVideoStreamId_);
 
     this.infoBox_.getRemoteTrackIds(stream);
   
@@ -348,13 +337,10 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
       clearTimeout(this.remoteVideoResetTimer_);
       this.remoteVideoResetTimer_ = null;
     }
-    return;
   }
 };
 
 AppController.prototype.onLocalStreamAdded_ = function(stream) {
-  trace('onLocalStreamAdded_.');
-
   this.localCameraStream_ = stream;
   this.infoBox_.getLocalTrackIds(this.localCameraStream_);
 
@@ -393,13 +379,10 @@ AppController.prototype.setLocalVideoFile_ = function(videoFileObj) {
 };
 
 AppController.prototype.onGetLocalVideoStream_ = function() {
-  trace('onGetLocalVideoStream_.');
   return this.localVideo_.captureStream();
 };
 
 AppController.prototype.transitionToActive_ = function() {
-  trace('transitionToActive_.');
-
   // Stop waiting for remote video.
   this.miniVideo_.oncanplay = undefined;
   this.remoteVideo_.oncanplay = undefined;
@@ -410,7 +393,6 @@ AppController.prototype.transitionToActive_ = function() {
   trace('Call setup time: ' + (connectTime - this.call_.startTime).toFixed(0) +
       'ms.');
 
-  trace(' transitionToActive_ localVideoFileObj_= ' + this.localVideoFileObj_);
   if (this.localVideoFileObj_) {
     if (this.localVideo_.paused)
       this.localVideo_.play();
@@ -437,8 +419,6 @@ AppController.prototype.transitionToActive_ = function() {
 };
 
 AppController.prototype.transitionToWaiting_ = function() {
-  trace('transitionToWaiting_.');
-
   // Stop waiting for remote video.
   this.miniVideo_.oncanplay = undefined;
   this.remoteVideo_.oncanplay = undefined;
@@ -456,7 +436,6 @@ AppController.prototype.transitionToWaiting_ = function() {
     }.bind(this), 800);
   }
 
-  trace(' transitionToActive_ localVideoFileObj_= ' + this.localVideoFileObj_);
   if (this.localVideoFileObj_) {
     if (!this.localVideo_.paused)
       this.localVideo_.pause();
@@ -473,8 +452,6 @@ AppController.prototype.transitionToWaiting_ = function() {
 };
 
 AppController.prototype.transitionToDone_ = function() {
-  trace('transitionToDone_.');
-
   // Stop waiting for remote video.
   this.miniVideo_.oncanplay = undefined;
   this.remoteVideo_.oncanplay = undefined;
@@ -496,8 +473,6 @@ AppController.prototype.transitionToDone_ = function() {
 };
 
 AppController.prototype.onRejoinClick_ = function() {
-  trace('onRejoinClick_.');
-
   this.deactivate_(this.rejoinDiv_);
   this.hide_(this.rejoinDiv_);
   this.call_.restart();
@@ -505,8 +480,6 @@ AppController.prototype.onRejoinClick_ = function() {
 };
 
 AppController.prototype.onNewRoomClick_ = function() {
-  trace('onNewRoomClick_.');
-
   this.deactivate_(this.rejoinDiv_);
   this.hide_(this.rejoinDiv_);
   this.showRoomSelection_();
