@@ -171,9 +171,9 @@
 
       function handleVideoFileInput(event) {
         const selectedFile = document.getElementById('video-file-input').files[0];
-        var videoFileObj = (window.URL || window.webkitURL).createObjectURL(selectedFile);
-        console.log('local Video File Object: ', videoFileObj);
-        appController.setLocalVideoFile_(videoFileObj);
+        var videoFileUrl = (window.URL || window.webkitURL).createObjectURL(selectedFile);
+        console.log('local Video File Url: ', videoFileUrl);
+        appController.setLocalVideoFile_(videoFileUrl);
       }
       const inputElement = document.getElementById("video-file-input");
       inputElement.addEventListener("change", handleVideoFileInput, false);
