@@ -11,12 +11,12 @@
 }
 
 a {
-  color: #4285F4;
+  color: #f39b9b;
   text-decoration: none;
 }
 
 a:hover {
-  color: #3B78E7;
+  color: #e64a4a;
   text-decoration: underline;
 }
 
@@ -242,7 +242,7 @@ button {
   height: 2.75em;
   margin: 0 5px 20px 5px;
   padding: 0.5em 0.7em 0.5em 0.7em;
-  width: 10em;
+  width: 15em;
 }
 
 button:active {
@@ -269,10 +269,10 @@ button[disabled] {
   color: rgba(255, 255, 255, 0.3);
 }
 
-input[type=text] {
+input[type=file] {
   background-color: transparent;
   border: none;
-  border-bottom: solid 1px #4c4c4f;
+  border-bottom: solid 1px #f0cfcf;
   color: #ffffff;
   display: block;
   font-size: 1em;
@@ -333,21 +333,6 @@ p {
 }
 
 /*////// room selection end /////////////////////*/
-
-#video-selection {
-  top: 0px;
-  opacity: 1;
-  position: absolute;
-  transition: all 1s;
-  z-index: 1;
-  margin-left: 20px;
-  margin-top: 15px;
-}
-
-#video-selection.active {
-  opacity: 1;
-  z-index: 6;
-}
 
 /*////// icons CSS start ////////////////////////*/
 

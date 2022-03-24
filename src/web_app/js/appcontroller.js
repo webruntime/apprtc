@@ -40,14 +40,12 @@ var UI_CONSTANTS = {
   rejoinLink: '#rejoin-link',
   roomLinkHref: '#room-link-href',
   roomSelectionDiv: '#room-selection',
-  roomSelectionInput: '#room-id-input',
-  roomSelectionInputLabel: '#room-id-input-label',
   roomSelectionJoinButton: '#join-button',
   sharingDiv: '#sharing-div',
   statusDiv: '#status-div',
   turnInfoDiv: '#turn-info-div',
   videosDiv: '#videos',
-  videoSelectionDiv: '#video-selection',
+  roomIdInput: '#room-id-input',
 };
 
 // The controller that connects the Call with the UI.
@@ -71,7 +69,10 @@ var AppController = function(loadingParams) {
   this.newRoomLink_ = $(UI_CONSTANTS.newRoomLink);
   this.rejoinButton_ = $(UI_CONSTANTS.rejoinButton);
   this.newRoomButton_ = $(UI_CONSTANTS.newRoomButton);
-  this.videoSelectionDiv_ = $(UI_CONSTANTS.videoSelectionDiv);
+  this.roomIdInput_ = $(UI_CONSTANTS.roomIdInput);
+  this.roomSelectionDiv_ = $(UI_CONSTANTS.roomSelectionDiv);
+  this.roomJoinButton_ = this.roomSelectionDiv_.querySelector(
+      UI_CONSTANTS.roomSelectionJoinButton);
 
   this.muteAudioIconSet_ =
       new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
@@ -99,7 +100,7 @@ var AppController = function(loadingParams) {
         this.onRejoinClick_.bind(this), false);
 
     this.roomLink_ = '';
-    this.roomSelection_ = null;
+
     this.localCameraStream_ = null;
     this.remoteVideoResetTimer_ = null;
 
@@ -107,6 +108,7 @@ var AppController = function(loadingParams) {
     this.remoteCameraStreamId_ = null;
 
     this.localVideoUrl_ = null;
+    this.selectedRoomId_ = null;
 
     // If the params has a roomId specified, we should connect to that room
     // immediately. If not, show the room selection UI.
@@ -181,34 +183,46 @@ AppController.prototype.createCall_ = function() {
   this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
 };
 
-AppController.prototype.showRoomSelection_ = function() {
-  var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
-  this.roomSelection_ = new RoomSelection(roomSelectionDiv, UI_CONSTANTS);
+AppController.prototype.setLocalVideoFile_ = function(videoUrl) {
+  trace('Setting local video file to share: ' + videoUrl);
 
+  this.localVideoUrl_ = videoUrl;
+  this.localVideo_.src = this.localVideoUrl_;
+  this.localVideo_.pause();
+
+  let hypenPos = videoUrl.lastIndexOf("-");
+  let urlLength = videoUrl.length;
+  this.selectedRoomId_ = videoUrl.substr(hypenPos + 1, urlLength - hypenPos);
+  trace('Selected roomName= ' + this.selectedRoomId_);
+
+  this.displayStatus_('');
+};
+
+AppController.prototype.showRoomSelection_ = function() {
   if (this.localVideoUrl_) {
-    document.getElementById("video-file-input").value = "";
+    this.roomIdInput_.value = "";
     this.localVideoUrl_ = null;
   }
 
-  this.show_(this.videoSelectionDiv_);
+  this.show_(this.roomSelectionDiv_);
 
-  this.show_(roomSelectionDiv);
-  this.roomSelection_.onRoomSelected = function(roomName) {
-    if (!this.localVideoUrl_) {
-      alert("Select a video file to stream.");
-      return;
-    }
+  this.roomJoinButton_.addEventListener(
+      'click', this.onRoomSelected_.bind(this), false);
+};
 
-    this.hide_(roomSelectionDiv);
-    this.createCall_();
-    this.finishCallSetup_(roomName);
+AppController.prototype.onRoomSelected_ = function() {
+  if (!this.selectedRoomId_) {
+    alert("You must select a video file to Create a Video Room.");
+    return;
+  }
 
-    this.roomSelection_.removeEventListeners();
-    this.roomSelection_ = null;
-    if (this.localCameraStream_) {
-      this.attachLocalStream_();
-    }
-  }.bind(this);
+  this.hide_(this.roomSelectionDiv_);
+  this.createCall_();
+  this.finishCallSetup_(this.selectedRoomId_);
+
+  if (this.localCameraStream_) {
+    this.attachLocalStream_();
+  }
 };
 
 AppController.prototype.setupUi_ = function() {
@@ -341,9 +355,7 @@ AppController.prototype.onLocalStreamAdded_ = function(stream) {
   this.localCameraStream_ = stream;
   this.infoBox_.getLocalTrackIds(this.localCameraStream_);
 
-  if (!this.roomSelection_) {
-    this.attachLocalStream_();
-  }
+  this.attachLocalStream_();
 
   return this.localVideo_.captureStream();
 };
@@ -370,16 +382,6 @@ AppController.prototype.attachLocalStream_ = function() {
   if (this.localCameraStream_.getAudioTracks().length === 0) {
     this.hide_($(UI_CONSTANTS.muteAudioSvg));
   }
-};
-
-AppController.prototype.setLocalVideoFile_ = function(videoUrl) {
-  trace('Setting local video file to share.');
-
-  this.localVideoUrl_ = videoUrl;
-  this.localVideo_.src = this.localVideoUrl_;
-  this.localVideo_.pause();
-
-  this.displayStatus_('');
 };
 
 AppController.prototype.transitionToActive_ = function() {

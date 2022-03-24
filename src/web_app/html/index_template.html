@@ -41,32 +41,22 @@
     <video id="local-video" autoplay playsinline muted></video>
   </div>
 
-  <div id="video-selection" class="hidden">
-    <p id="video-file-instructions">Please select video file.</p>
-    <div>
-      <div id="video-file-input-div">
-        <input type="file" id="video-file-input" accept="video/*">
-      </div>
-    </div>
-  </div>
-
   <div id="room-selection" class="hidden">
     <h1>Watch Together</h1>
-    <p id="room-id-instructions">Please enter room name.</p>
+    <p id="room-id-instructions">Please select video file.</p>
     <div>
       <div id="room-id-input-div">
-        <input type="text" id="room-id-input" autofocus/>
-        <label class="error-label hidden" for="room-id-input" id="room-id-input-label">Room name must be 5 or more characters and include only letters, numbers, underscore and hyphen.</label>
+        <input type="file" id="room-id-input" accept="video/*" autofocus/>
       </div>
       <div id="room-id-input-buttons">
-        <button id="join-button">CREATE ROOM</button>
+        <button id="join-button">CREATE VIDEO ROOM</button>
       </div>
     </div>
   </div>
 
   <div id="confirm-join-div" class="hidden">
     <div>Ready to join<span id="confirm-join-room-span"></span>?</div>
-    <button id="confirm-join-button">JOIN ROOM</button>
+    <button id="confirm-join-button">JOIN VIDEO ROOM</button>
   </div>
 
   <footer>
@@ -76,7 +66,7 @@
     <div id="info-div">Code for Watch Together is available from <a href="http://github.com/webruntime/apprtc" title="GitHub repo for AppRTC">github.com/webrtc/apprtc</a></div>
     <div id="status-div"></div>
     <div id="turn-info-div"></div>
-    <div id="rejoin-div" class="hidden"><span>You have left the call.</span> <button id="rejoin-button">REJOIN</button><button id="new-room-button">CREATE NEW ROOM</button></div>
+    <div id="rejoin-div" class="hidden"><span>You have left the call.</span> <button id="rejoin-button">REJOIN VIDEO ROOM</button><button id="new-room-button">NEW VIDEO ROOM</button></div>
   </footer>
 
   <div id="icons" class="hidden">
@@ -170,12 +160,11 @@
       appController = new AppController(loadingParams);
 
       function handleVideoFileInput(event) {
-        const selectedFile = document.getElementById('video-file-input').files[0];
+        const selectedFile = document.getElementById('room-id-input').files[0];
         var videoFileUrl = (window.URL || window.webkitURL).createObjectURL(selectedFile);
-        console.log('local Video File Url: ', videoFileUrl);
         appController.setLocalVideoFile_(videoFileUrl);
       }
-      const inputElement = document.getElementById("video-file-input");
+      const inputElement = document.getElementById("room-id-input");
       inputElement.addEventListener("change", handleVideoFileInput, false);
     }
 
