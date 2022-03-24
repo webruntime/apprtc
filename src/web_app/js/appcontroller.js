@@ -28,12 +28,12 @@ var UI_CONSTANTS = {
   infoDiv: '#info-div',
   localCamera: '#local-camera',
   localVideo: '#local-video',
-  miniVideo: '#mini-video',
   muteAudioSvg: '#mute-audio',
   muteVideoSvg: '#mute-video',
   newRoomButton: '#new-room-button',
   newRoomLink: '#new-room-link',
   privacyLinks: '#privacy',
+  remoteCamera: '#remote-camera',
   remoteVideo: '#remote-video',
   rejoinButton: '#rejoin-button',
   rejoinDiv: '#rejoin-div',
@@ -59,10 +59,10 @@ var AppController = function(loadingParams) {
   this.icons_ = $(UI_CONSTANTS.icons);
   this.localCamera_ = $(UI_CONSTANTS.localCamera);
   this.localVideo_ = $(UI_CONSTANTS.localVideo);
-  this.miniVideo_ = $(UI_CONSTANTS.miniVideo);
   this.sharingDiv_ = $(UI_CONSTANTS.sharingDiv);
   this.statusDiv_ = $(UI_CONSTANTS.statusDiv);
   this.turnInfoDiv_ = $(UI_CONSTANTS.turnInfoDiv);
+  this.remoteCamera_ = $(UI_CONSTANTS.remoteCamera);
   this.remoteVideo_ = $(UI_CONSTANTS.remoteVideo);
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
   this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
@@ -107,7 +107,6 @@ var AppController = function(loadingParams) {
     this.remoteCameraStreamId_ = null;
 
     this.localVideoFileObj_ = null;
-    this.localVideoStream_ = null;
 
     // If the params has a roomId specified, we should connect to that room
     // immediately. If not, show the room selection UI.
@@ -180,8 +179,6 @@ AppController.prototype.createCall_ = function() {
   this.call_.onerror = this.displayError_.bind(this);
   this.call_.onturnstatusmessage = this.displayTurnStatus_.bind(this);
   this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
-
-  this.call_.getLocalVideoStream_ = this.onGetLocalVideoStream_.bind(this);
 };
 
 AppController.prototype.showRoomSelection_ = function() {
@@ -286,14 +283,14 @@ AppController.prototype.onRemoteSdpSet_ = function(hasRemoteVideo) {
 AppController.prototype.waitForRemoteVideo_ = function() {
   // Wait for the actual video to start arriving before moving to the active
   // call state.
-  if (this.miniVideo_.readyState >= 2) { // i.e. can play remote camera
+  if (this.remoteCamera_.readyState >= 2) {
     trace('Remote camera started; currentTime: ' +
-          this.miniVideo_.currentTime);
+          this.remoteCamera_.currentTime);
     if (this.localVideoFileObj_) {
       this.transitionToActive_();
       return;
     } else {
-      if (this.remoteVideo_.readyState >= 2) { // i.e. can play remote video
+      if (this.remoteVideo_.readyState >= 2) {
         trace('Remote video started; currentTime: ' +
               this.remoteVideo_.currentTime);
         this.transitionToActive_();
@@ -305,7 +302,7 @@ AppController.prototype.waitForRemoteVideo_ = function() {
     }
   } else {
     trace('Waiting for remote camera.');
-    this.miniVideo_.oncanplay = this.waitForRemoteVideo_.bind(this);
+    this.remoteCamera_.oncanplay = this.waitForRemoteVideo_.bind(this);
   }
 };
 
@@ -313,8 +310,8 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
   this.deactivate_(this.sharingDiv_);
   this.displayTurnStatus_('');
 
-  if (!this.miniVideo_.srcObject || this.remoteCameraStreamId_ == stream.id) {
-    this.miniVideo_.srcObject = stream;
+  if (!this.remoteCamera_.srcObject) {
+    this.remoteCamera_.srcObject = stream;
     this.remoteCameraStreamId_ = stream.id;
 
     if (this.localVideoFileObj_ && this.remoteVideoResetTimer_) {
@@ -327,7 +324,7 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
     return;
   }
 
-  if (!this.remoteVideo_.srcObject || this.remoteVideoStreamId_ == stream.id) {
+  if (!this.remoteVideo_.srcObject) {
     this.remoteVideo_.srcObject = stream;
     this.remoteVideoStreamId_ = stream.id;
 
@@ -347,6 +344,8 @@ AppController.prototype.onLocalStreamAdded_ = function(stream) {
   if (!this.roomSelection_) {
     this.attachLocalStream_();
   }
+
+  return this.localVideo_.captureStream();
 };
 
 AppController.prototype.attachLocalStream_ = function() {
@@ -373,18 +372,13 @@ AppController.prototype.setLocalVideoFile_ = function(videoFileObj) {
   this.localVideoFileObj_ = videoFileObj;
   this.localVideo_.src = this.localVideoFileObj_;
   this.localVideo_.pause();
-  this.localVideoStream_ = this.localVideo_.captureStream();
   
   this.displayStatus_('');
 };
 
-AppController.prototype.onGetLocalVideoStream_ = function() {
-  return this.localVideo_.captureStream();
-};
-
 AppController.prototype.transitionToActive_ = function() {
   // Stop waiting for remote video.
-  this.miniVideo_.oncanplay = undefined;
+  this.remoteCamera_.oncanplay = undefined;
   this.remoteVideo_.oncanplay = undefined;
 
   var connectTime = window.performance.now();
@@ -405,7 +399,7 @@ AppController.prototype.transitionToActive_ = function() {
   }
 
   // Transition opacity from 0 to 1 for the remote and mini videos.
-  this.activate_(this.miniVideo_);
+  this.activate_(this.remoteCamera_);
 
   // Transition opacity from 1 to 0 for the local video.
   this.deactivate_(this.localCamera_);
@@ -420,7 +414,7 @@ AppController.prototype.transitionToActive_ = function() {
 
 AppController.prototype.transitionToWaiting_ = function() {
   // Stop waiting for remote video.
-  this.miniVideo_.oncanplay = undefined;
+  this.remoteCamera_.oncanplay = undefined;
   this.remoteVideo_.oncanplay = undefined;
 
   this.hide_(this.hangupSvg_);
@@ -448,20 +442,20 @@ AppController.prototype.transitionToWaiting_ = function() {
 
   // Transition opacity from 1 to 0 for the remote and mini videos.
   this.deactivate_(this.remoteVideo_);
-  this.deactivate_(this.miniVideo_);
+  this.deactivate_(this.remoteCamera_);
 };
 
 AppController.prototype.transitionToDone_ = function() {
   // Stop waiting for remote video.
-  this.miniVideo_.oncanplay = undefined;
+  this.remoteCamera_.oncanplay = undefined;
   this.remoteVideo_.oncanplay = undefined;
 
   this.remoteVideo_.srcObject = null;
-  this.miniVideo_.srcObject = null;
+  this.remoteCamera_.srcObject = null;
 
   this.deactivate_(this.localCamera_);
   this.deactivate_(this.remoteVideo_);
-  this.deactivate_(this.miniVideo_);
+  this.deactivate_(this.remoteCamera_);
   this.deactivate_(this.localVideo_);
 
   this.hide_(this.hangupSvg_);
@@ -585,10 +579,10 @@ AppController.prototype.toggleFullScreen_ = function() {
 };
 
 AppController.prototype.toggleMiniVideo_ = function() {
-  if (this.miniVideo_.classList.contains('active')) {
-    this.deactivate_(this.miniVideo_);
+  if (this.remoteCamera_.classList.contains('active')) {
+    this.deactivate_(this.remoteCamera_);
   } else {
-    this.activate_(this.miniVideo_);
+    this.activate_(this.remoteCamera_);
   }
 };
 

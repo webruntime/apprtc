@@ -44,7 +44,6 @@ var Call = function(params) {
   this.getVideoPromise_ = null;
   this.getIceServersPromise_ = null;
 
-  this.getLocalVideoStream_ = null;
   this.localVideoStream_ = null;
 
   this.requestMediaAndIceServers_();
@@ -321,7 +320,6 @@ Call.prototype.maybeGetCamera_ = function() {
           trace('Got access to local media with mediaConstraints:\n' +
           '  \'' + JSON.stringify(mediaConstraints) + '\'');
           this.onGetCameraSuccess_(stream);
-          this.updateLocalVideoStream_();
         }.bind(this)).catch(function(error) {
           this.onError_('Error getting user media: ' + error.message);
           this.onUserMediaError_(error);
@@ -380,14 +378,9 @@ Call.prototype.maybeGetIceServers_ = function() {
 
 Call.prototype.onGetCameraSuccess_ = function(stream) {
   this.localCameraStream_ = stream;
-  if (this.onlocalstreamadded) {
-    this.onlocalstreamadded(stream);
-  }
-};
 
-Call.prototype.updateLocalVideoStream_ = function() {
-  if (this.getLocalVideoStream_) {
-    this.localVideoStream_ = this.getLocalVideoStream_();
+  if (this.onlocalstreamadded) {
+    this.localVideoStream_ = this.onlocalstreamadded(stream);
     trace("got local VideoStream = " + this.localVideoStream_);
   }
 };

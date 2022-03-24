@@ -137,19 +137,20 @@ label {
   margin: 0 10px 0 0;
 }
 
-#mini-video {
+#remote-camera {
   border: 1px solid gray;
-  bottom: 20px;
   left: 20px;
   max-height: 17%;
   max-width: 17%;
   opacity: 0;
   transition: opacity 1s;
+  position: absolute;
+  bottom: 20px;
 }
 
-#mini-video.active {
+#remote-camera.active {
   opacity: 1;
-  z-index: 2;
+  z-index: 8;
 }
 
 #local-camera {

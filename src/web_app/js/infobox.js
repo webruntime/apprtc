@@ -17,7 +17,7 @@
 var InfoBox = function(infoDiv, call, versionInfo) {
   this.infoDiv_ = infoDiv;
   this.remoteVideo_ = document.getElementById('remote-video');
-  this.localCamera_ = document.getElementById('mini-video');
+  this.localCamera_ = document.getElementById('remote-camera');
   this.call_ = call;
   this.versionInfo_ = versionInfo;
 
