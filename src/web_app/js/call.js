@@ -44,14 +44,13 @@ var Call = function(params) {
   this.getVideoPromise_ = null;
   this.getIceServersPromise_ = null;
 
+  this.getlocalvideostream = null;
   this.localVideoStream_ = null;
-
-  this.requestMediaAndIceServers_();
 };
 
 Call.prototype.requestMediaAndIceServers_ = function() {
+  this.getVideoPromise_ = this.maybeGetLocalVideo_();
   this.getCameraPromise_ = this.maybeGetCamera_();
-  this.getVideoPromise_ = this.maybeGetVideo_();
   this.getIceServersPromise_ = this.maybeGetIceServers_();
 };
 
@@ -86,6 +85,18 @@ Call.prototype.hangup = function(async) {
       });
     }
     this.localCameraStream_ = null;
+  }
+
+  if (this.localVideoStream_) {
+    if (typeof this.localVideoStream_.getTracks === 'undefined') {
+      // Support legacy browsers, like phantomJs we use to run tests.
+      this.localVideoStream_.stop();
+    } else {
+      this.localVideoStream_.getTracks().forEach(function(track) {
+        track.stop();
+      });
+    }
+    this.localVideoStream_ = null;
   }
 
   if (!this.params_.roomId) {
@@ -330,12 +341,14 @@ Call.prototype.maybeGetCamera_ = function() {
   return mediaPromise;
 };
 
-Call.prototype.maybeGetVideo_ = function() {
-  if (this.localVideoStream_) {
-    return this.localVideoStream_; 
+Call.prototype.maybeGetLocalVideo_ = function() {
+  var mediaPromise = null;
+  if (this.getlocalvideostream) {
+    mediaPromise = this.getlocalvideostream();
+    this.onGetVideoSuccess_(this.getlocalvideostream());
+  } else {
+    mediaPromise = Promise.resolve();
   }
-
-  var mediaPromise = Promise.resolve();
   return mediaPromise;
 };
 
@@ -380,9 +393,13 @@ Call.prototype.onGetCameraSuccess_ = function(stream) {
   this.localCameraStream_ = stream;
 
   if (this.onlocalstreamadded) {
-    this.localVideoStream_ = this.onlocalstreamadded(stream);
-    trace("got local VideoStream = " + this.localVideoStream_);
+    this.onlocalstreamadded(stream);
   }
+};
+
+Call.prototype.onGetVideoSuccess_ = function(stream) {
+  this.localVideoStream_ = stream;
+  trace("Get local video stream id= " + this.localVideoStream_.id);
 };
 
 Call.prototype.onUserMediaError_ = function(error) {
@@ -444,12 +461,12 @@ Call.prototype.startSignaling_ = function() {
   this.maybeCreatePcClientAsync_()
       .then(function() {
         if (this.localCameraStream_) {
-          trace('Adding local camera stream.');
+          trace('Adding local camera stream id= ' + this.localCameraStream_.id);
           this.pcClient_.addStream(this.localCameraStream_);
         }
 
         if (this.localVideoStream_) {
-          trace('Adding local video stream.');
+          trace('Adding local video stream id= ' + this.localVideoStream_.id);
           this.pcClient_.addStream(this.localVideoStream_);
         }
 
