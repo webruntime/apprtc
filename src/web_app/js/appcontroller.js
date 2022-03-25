@@ -345,17 +345,12 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
 };
 
 AppController.prototype.onGetLocalVideoStream_ = function() {
-  if (!this.localVideoStream_) {
-    if (this.localVideoUrl_) {
-      this.activate_(this.localVideo_);
-
-      this.localVideo_.play();
-      this.localVideoStream_ = this.localVideo_.captureStream();
-      this.localVideo_.pause();
-    } else {
-      this.localVideoStream_ = this.localVideo_.captureStream();
-      this.deactivate_(this.localVideo_);
-    }
+  if (this.localVideoUrl_) {
+    this.activate_(this.localVideo_);
+    this.localVideoStream_ = this.localVideo_.captureStream();
+  } else {
+    this.localVideoStream_ = this.localVideo_.captureStream();
+    this.deactivate_(this.localVideo_);
   }
 
   return this.localVideoStream_;
@@ -430,6 +425,8 @@ AppController.prototype.transitionToWaiting_ = function() {
   this.deactivate_(this.remoteCamera_);
 
   if (this.localVideoUrl_) {
+    if (!this.localVideo_.paused)
+      this.localVideo_.pause();
     this.activate_(this.localVideo_);
   } else {
     this.deactivate_(this.localVideo_);

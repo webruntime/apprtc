@@ -91,6 +91,7 @@ PeerConnectionClient.prototype.removeStream = function(stream) {
 };
 
 PeerConnectionClient.prototype.startAsCaller = function(offerOptions) {
+  trace("startAsCaller this.started_= " + this.started_);
   if (!this.pc_) {
     return false;
   }
@@ -113,6 +114,8 @@ PeerConnectionClient.prototype.startAsCaller = function(offerOptions) {
 };
 
 PeerConnectionClient.prototype.startAsCallee = function(initialMessages) {
+  trace("startAsCallee this.started_= " + this.started_);
+
   if (!this.pc_) {
     return false;
   }
